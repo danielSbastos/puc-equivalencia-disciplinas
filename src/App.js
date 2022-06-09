@@ -5,9 +5,10 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import './App.css';
 
+import XlsImporter from './XlsImporter';
 import ReactToPrint from 'react-to-print';
 import { TrashFill  } from 'react-bootstrap-icons';
-import React, { useState, useRef } from 'react'; 
+import React, { useState, useRef, useEffect } from 'react'; 
 
 const subjectsMissing = [
   { id: 54817, name: 'ARQUITETURA DE COMPUTADORES II', hours: 80 },
@@ -46,7 +47,7 @@ const date = () => {
 }
 
 
-const Pdf = React.forwardRef(({ equivalences }, ref) => {
+const Pdf = React.forwardRef(({ subjects, equivalences }, ref) => {
   return (
     <div className='pdf' ref={ref}>
       <div className="text-center">
@@ -74,8 +75,8 @@ const Pdf = React.forwardRef(({ equivalences }, ref) => {
         </thead>
         <tbody>
           {Object.entries(equivalences).map((equivalence) => {
-            const extra = subjectsExtra[extraIndex[equivalence[0]]]
-            const missing = subjectsMissing[missingIndex[equivalence[1]]]
+            const extra = subjects.subjectsExtra[subjects.extraIndex[equivalence[0]]]
+            const missing = subjects.subjectsMissing[subjects.missingIndex[equivalence[1]]]
             return (
               <tr key={equivalence[0]}>
                 <td>{missing.name}</td>
@@ -110,6 +111,7 @@ function App() {
   const [equivalences, setEquivalences] = useState({});
   const [missingSelected, setMissingSelected] = useState(null);
   const [extraSelected, setExtraSelected] = useState(null);
+  const [subjects, setSubjects] = useState({ extraIndex: {}, missingIndex: {}, subjectsMissing: [], subjectsExtra: [] })
 
   const handleEquivalence = (id, isExtra) => {
     if (isExtra) {
@@ -136,8 +138,13 @@ function App() {
     setEquivalences({ ...equivalences });
   }
 
+  useEffect(() => {
+    console.log(subjects)
+  }, [subjects])
+
   return (
     <div className="App">
+      <XlsImporter handleResult={setSubjects} />
       <Container fluid="lg">
         <h1>Equivalência de Disciplinas</h1>
         <label><b>Aluno(a): </b>Daniel Schlickmann Bastos</label>
@@ -157,11 +164,11 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {subjectsExtra.map(extra => {
+                {subjects.subjectsExtra.map(extra => {
                   let equivalence;
 
                   if (equivalences[extra.id]) {
-                    equivalence = equivalences[extra.id] + " - " + subjectsMissing[missingIndex[equivalences[extra.id]]].name;
+                    equivalence = equivalences[extra.id] + " - " + subjects.subjectsMissing[subjects.missingIndex[equivalences[extra.id]]].name;
                   }
 
                   return (
@@ -182,9 +189,9 @@ function App() {
               trigger={() => <Button>Gerar pedido</Button>}
               content={() => componentRef.current}
             />
-            <Pdf ref={componentRef} equivalences={equivalences} />
+            <Pdf ref={componentRef} equivalences={equivalences} subjects={subjects} />
           </Col>
-          <Col md={{ span: 4, offset: 1 }}>
+          <Col md={{ span: 5 }}>
             <h3>Disciplinas a cursar</h3>
             <Table striped bordered hover>
               <thead>
@@ -195,7 +202,7 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {subjectsMissing.map(missing => (
+                {subjects.subjectsMissing.map(missing => (
                   <tr onClick={() => handleEquivalence(missing.id, false)} key={missing.id}>
                     <td>{missing.id}</td>
                     <td>{missing.name}</td>
