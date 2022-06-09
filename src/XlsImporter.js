@@ -51,7 +51,8 @@ export default function XlsImporterApp({ handleResult }) {
   };
   return (
     <div>
-      <input type="file" onChange={onChange} />
+      <label htmlFor="files" className="btn btn-primary">Selecionar arquivo</label>
+      <input id="files" onChange={onChange} style={{ visibility: "hidden" }} type="file" />
     </div>
   );
 }

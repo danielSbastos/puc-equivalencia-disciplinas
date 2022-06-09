@@ -8,44 +8,16 @@ import './App.css';
 import XlsImporter from './XlsImporter';
 import ReactToPrint from 'react-to-print';
 import { TrashFill  } from 'react-bootstrap-icons';
-import React, { useState, useRef, useEffect } from 'react'; 
-
-const subjectsMissing = [
-  { id: 54817, name: 'ARQUITETURA DE COMPUTADORES II', hours: 80 },
-  { id: 54938, name: 'OPTATIVA III (Virtual)', hours: 80 },
-  { id: 54334, name: 'FILOSOFIA: RAZÃO E MODERNIDADE', hours: 40 },
-  { id: 54834, name: 'FUNDAMENTOS TEÓRICOS DA COMPUTAÇÃO', hours: 80 },
-  { id: 57338, name: 'COMPUTAÇÃO DISTRIBUÍDA (Semipresencial)', hours: 60 }
-]
-
-const subjectsExtra = [
-  { id: 56963, name: 'FUNDAMENTOS DE ENGENHARIA DE SOFTWARE', grade: 98, hours: 80 },
-  { id: 57705, name: 'ARQUITETURA DE COMPUTADORES II', grade: 98, hours: 80 },
-  { id: 54337, name: 'FUNDAMENTOS DA MATEMÁTICA (Virtual)', grade: 92, hours: 80 }
-]
-
-const extraIndex = {
-  56963: 0,
-  57705: 1, 
-  54337: 2
-}
-
-const missingIndex = {
-  54817: 0,
-  54938: 1,
-  54334: 2,
-  54834: 3,
-  57338: 4
-}
+import React, { useState, useRef } from 'react'; 
 
 const date = () => {
-  const data = new Date(),
-      dia  = data.getDate().toString().padStart(2, '0'),
-      mes  = (data.getMonth()+1).toString().padStart(2, '0'), //+1 pois no getMonth Janeiro começa com zero.
-      ano  = data.getFullYear();
-  return dia+"/"+mes+"/"+ano;
-}
+  const data = new Date();
+  const day = data.getDate().toString().padStart(2, '0');
+  const month  = (data.getMonth()+1).toString().padStart(2, '0');
+  const year  = data.getFullYear();
 
+  return day + "/" + month + "/" + year;
+}
 
 const Pdf = React.forwardRef(({ subjects, equivalences }, ref) => {
   return (
@@ -113,7 +85,11 @@ function App() {
   const [extraSelected, setExtraSelected] = useState(null);
   const [subjects, setSubjects] = useState({ extraIndex: {}, missingIndex: {}, subjectsMissing: [], subjectsExtra: [] })
 
-  const handleEquivalence = (id, isExtra) => {
+  const handleEquivalence = (id, isExtra, event) => {
+    if (event.target.nodeName === 'svg' || event.target.nodeName === 'path' ) {
+      return
+    }
+
     if (isExtra) {
       if (missingSelected) {
         setEquivalences({ ...equivalences, [id]: missingSelected })
@@ -136,19 +112,17 @@ function App() {
   const handleRemoveEquivalence = (extraId) => {
     delete equivalences[extraId];
     setEquivalences({ ...equivalences });
+    setExtraSelected(null)
+    setMissingSelected(null)
   }
-
-  useEffect(() => {
-    console.log(subjects)
-  }, [subjects])
 
   return (
     <div className="App">
-      <XlsImporter handleResult={setSubjects} />
       <Container fluid="lg">
         <h1>Equivalência de Disciplinas</h1>
         <label><b>Aluno(a): </b>Daniel Schlickmann Bastos</label>
         <p><b>Matrícula: </b>696777</p>
+        <XlsImporter handleResult={setSubjects} />
         <hr />
         <Row>
           <Col md={7}>
@@ -171,8 +145,9 @@ function App() {
                     equivalence = equivalences[extra.id] + " - " + subjects.subjectsMissing[subjects.missingIndex[equivalences[extra.id]]].name;
                   }
 
+                  const clicked =  Object.keys(equivalences).includes(extra.id) || (extraSelected === extra.id);
                   return (
-                    <tr onClick={() => handleEquivalence(extra.id, true)} key={extra.id}>
+                    <tr className={(clicked || equivalence)? "subject-selected": ""} onClick={(event) => handleEquivalence(extra.id, true, event)} key={extra.id}>
                       <td>{extra.id}</td>
                       <td>{extra.name}</td>
                       <td>{extra.grade}</td>
@@ -184,7 +159,6 @@ function App() {
                 })}
               </tbody>
             </Table>
-
             <ReactToPrint
               trigger={() => <Button>Gerar pedido</Button>}
               content={() => componentRef.current}
@@ -202,13 +176,17 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {subjects.subjectsMissing.map(missing => (
-                  <tr onClick={() => handleEquivalence(missing.id, false)} key={missing.id}>
-                    <td>{missing.id}</td>
-                    <td>{missing.name}</td>
-                    <td>{missing.hours}</td>
-                  </tr>
-                ))}
+                {subjects.subjectsMissing.map(missing => {
+                  const clicked =  Object.values(equivalences).includes(missing.id) || (missingSelected === missing.id);
+
+                  return (
+                    <tr className={clicked ? "subject-selected": ""} onClick={(event) => handleEquivalence(missing.id, false, event)} key={missing.id}>
+                      <td>{missing.id}</td>
+                      <td>{missing.name}</td>
+                      <td>{missing.hours}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </Table>
           </Col>
