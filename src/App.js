@@ -5,8 +5,9 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import './App.css';
 
+import ReactToPrint from 'react-to-print';
 import { TrashFill  } from 'react-bootstrap-icons';
-import { useState } from 'react'; 
+import React, { useState, useRef } from 'react'; 
 
 const subjectsMissing = [
   { id: 54817, name: 'ARQUITETURA DE COMPUTADORES II', hours: 80 },
@@ -22,22 +23,93 @@ const subjectsExtra = [
   { id: 54337, name: 'FUNDAMENTOS DA MATEMÁTICA (Virtual)', grade: 92, hours: 80 }
 ]
 
-const index = {
-  54817: 'ARQUITETURA DE COMPUTADORES II',
-  54938: 'OPTATIVA III (Virtual)',
-  54334: 'FILOSOFIA: RAZÃO E MODERNIDADE',
-  54834: 'FUNDAMENTOS TEÓRICOS DA COMPUTAÇÃO',
-  57338: 'COMPUTAÇÃO DISTRIBUÍDA (Semipresencial)',
-  56963: 'FUNDAMENTOS DE ENGENHARIA DE SOFTWARE',
-  57705: 'ARQUITETURA DE COMPUTADORES II',
-  54337: 'FUNDAMENTOS DA MATEMÁTICA (Virtual)'
+const extraIndex = {
+  56963: 0,
+  57705: 1, 
+  54337: 2
 }
 
+const missingIndex = {
+  54817: 0,
+  54938: 1,
+  54334: 2,
+  54834: 3,
+  57338: 4
+}
+
+const date = () => {
+  const data = new Date(),
+      dia  = data.getDate().toString().padStart(2, '0'),
+      mes  = (data.getMonth()+1).toString().padStart(2, '0'), //+1 pois no getMonth Janeiro começa com zero.
+      ano  = data.getFullYear();
+  return dia+"/"+mes+"/"+ano;
+}
+
+
+const Pdf = React.forwardRef(({ equivalences }, ref) => {
+  return (
+    <div className='pdf' ref={ref}>
+      <div className="text-center">
+        <img src="image1.jpg" width={'45%'} alt="puc" />
+        <p style={{ marginTop: '1%' }}><b>Centro de Registros Acadêmicos</b></p>
+      </div>
+
+      <label>Prezado Coordenador,</label>
+      <p>Favor verificar se a equivalência solicitada pode ser efetivada.</p>
+
+      Assinale um dos quadros abaixo:<br />
+      <input type="checkbox" /> Não, a equivalência não pode ser considerada.<br />
+      <input type="checkbox" /> Sim. A equivalência deve prevalecer para todos os casos e deve ser lançada na tabela de equivalência.
+
+      <Table bordered style={{ marginTop: '0.5%', fontSize: '14px' }}>
+        <thead>
+          <tr>
+            <th>Disciplinas do curso</th>
+            <th>CH</th>
+            <th>Código</th>
+            <th>Disciplinas equivalentes</th>
+            <th>CH</th>
+            <th>Código</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(equivalences).map((equivalence) => {
+            const extra = subjectsExtra[extraIndex[equivalence[0]]]
+            const missing = subjectsMissing[missingIndex[equivalence[1]]]
+            return (
+              <tr key={equivalence[0]}>
+                <td>{missing.name}</td>
+                <td>{missing.hours}</td>
+                <td>{missing.id}</td>
+                <td>{extra.name}</td>
+                <td>{extra.hours}</td>
+                <td>{extra.id}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </Table>
+
+      <input type="checkbox" checked /> Sim. A equivalência, entretanto, só pode ser considerada nestes casos específicos.<br />
+      <label style={{ marginTop: '1%', marginRight: '4%' }}>Aluno(a): Daniel Schlickmann Bastos</label>
+      <label>Matrícula: 696777</label><br />
+      <label style={{ marginBottom: '4%' }}>Data: {date()}</label>
+      <br />
+
+      _________________________________________
+      <p>Assinatura e carimbo da Coordenação do Curso</p>
+
+    </div>
+  );
+});
+
+
 function App() {
+  const componentRef = useRef();
+
   const [equivalences, setEquivalences] = useState({});
   const [missingSelected, setMissingSelected] = useState(null);
   const [extraSelected, setExtraSelected] = useState(null);
-  const [showPdf, setShowPdf] = useState(false);
 
   const handleEquivalence = (id, isExtra) => {
     if (isExtra) {
@@ -60,7 +132,8 @@ function App() {
   }
 
   const handleRemoveEquivalence = (extraId) => {
-    setEquivalences({ ...equivalences, [extraId]: null })
+    delete equivalences[extraId];
+    setEquivalences({ ...equivalences });
   }
 
   return (
@@ -84,19 +157,32 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {subjectsExtra.map(extra => (
-                  <tr onClick={() => handleEquivalence(extra.id, true)} key={extra.id}>
-                    <td>{extra.id}</td>
-                    <td>{extra.name}</td>
-                    <td>{extra.grade}</td>
-                    <td>{extra.hours}</td>
-                    <td>{equivalences[extra.id]} - {index[equivalences[extra.id]]}</td>
-                    <td>{equivalences[extra.id] && <TrashFill onClick={() => handleRemoveEquivalence(extra.id)}/>}</td>
-                  </tr>
-                ))}
+                {subjectsExtra.map(extra => {
+                  let equivalence;
+
+                  if (equivalences[extra.id]) {
+                    equivalence = equivalences[extra.id] + " - " + subjectsMissing[missingIndex[equivalences[extra.id]]].name;
+                  }
+
+                  return (
+                    <tr onClick={() => handleEquivalence(extra.id, true)} key={extra.id}>
+                      <td>{extra.id}</td>
+                      <td>{extra.name}</td>
+                      <td>{extra.grade}</td>
+                      <td>{extra.hours}</td>
+                      <td>{equivalences[extra.id] && equivalence}</td>
+                      <td>{equivalences[extra.id] && <TrashFill onClick={() => handleRemoveEquivalence(extra.id)}/>}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </Table>
-            <Button onClick={() => setShowPdf(true)}>Gerar pedido</Button>
+
+            <ReactToPrint
+              trigger={() => <Button>Gerar pedido</Button>}
+              content={() => componentRef.current}
+            />
+            <Pdf ref={componentRef} equivalences={equivalences} />
           </Col>
           <Col md={{ span: 4, offset: 1 }}>
             <h3>Disciplinas a cursar</h3>
