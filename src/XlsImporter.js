@@ -1,5 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import * as XLSX from "xlsx";
+
+import './XlsImporter.css';
+
+const studentInfo = {
+  name: 'Daniel Schlickmann Bastos',
+  id: '696777'
+};
 
 const extractInfo = (data) => {
   const startMissingText = "Relação das disciplinas que o aluno deverá cursar para integralizar o currículo no qual está inserido. ,,,,,,\nBase Bacharel,Código,Disciplina,Carga Horária,Crédito,Período,,\n"
@@ -30,11 +37,12 @@ const extractInfo = (data) => {
     return hashInfo
   }).filter((elem) => elem !== undefined);
 
-  return { extraIndex, missingIndex, subjectsMissing, subjectsExtra }
+  return { extraIndex, missingIndex, subjectsMissing, subjectsExtra, studentInfo }
 }
 
-
 export default function XlsImporterApp({ handleResult }) {
+  const [fileName, setFileName] = useState('');
+
   const onChange = (e) => {
     const [file] = e.target.files;
     const reader = new FileReader();
@@ -45,14 +53,22 @@ export default function XlsImporterApp({ handleResult }) {
       const wsname = wb.SheetNames[0];
       const ws = wb.Sheets[wsname];
       const data = XLSX.utils.sheet_to_csv(ws, { header: 1 });
-      handleResult(extractInfo(data));
+      let info;
+      try {
+        info = extractInfo(data);
+        setFileName(file.name);
+        handleResult(info)
+      } catch (error) {
+        alert('Arquivo inválido')
+      }
     };
     reader.readAsBinaryString(file);
   };
   return (
     <div>
       <label htmlFor="files" className="btn btn-primary">Selecionar arquivo</label>
-      <input id="files" onChange={onChange} style={{ visibility: "hidden" }} type="file" />
+      <label className="file-name">{fileName}</label>
+      <input className="file-input" id="files" onChange={onChange} type="file" />
     </div>
   );
 }

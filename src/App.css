@@ -26,3 +26,11 @@ table, thead, tbody, th, td {
   background-color: #bed8f3;
   cursor: pointer;
 }
+
+.th-small {
+  width: 10%;
+}
+
+.th-large {
+  width: 40%;
+}
