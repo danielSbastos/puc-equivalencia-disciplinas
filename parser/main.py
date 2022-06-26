@@ -80,7 +80,7 @@ def add_to_dict(dictt, key, value):
     return dictt
 
 
-book = xlrd.open_workbook("./reldefinicaocurriculo-nomes.xls")
+book = xlrd.open_workbook("./reldefinicaocurriculo.xls")
 sh = book.sheet_by_index(0)
 
 info = split_by_student(sh)
