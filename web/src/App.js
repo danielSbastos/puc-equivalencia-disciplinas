@@ -144,13 +144,19 @@ function App() {
   }
 
   const handleNextStudent = () => {
-    const newCurrentStudent = students[students.indexOf(currentStudent) + 1]
+    const index = students.indexOf(currentStudent)
+    if (index === (students.length - 1)) return
+
+    const newCurrentStudent = students[index + 1]
     setCurrentStudent(newCurrentStudent)
     setCurrentEquivalences(equivalences[newCurrentStudent] || {})
   }
 
   const handlePreviousStudent = () => {
-    const newCurrentStudent = students[students.indexOf(currentStudent) - 1]
+    const index = students.indexOf(currentStudent)
+    if (index === 0) return
+
+    const newCurrentStudent = students[index - 1]
     setCurrentStudent(newCurrentStudent)
     setCurrentEquivalences(equivalences[newCurrentStudent] || {})
   }
