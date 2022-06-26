@@ -13,6 +13,13 @@ const date = () => {
 }
 
 const Pdf = ({ student, subjects, equivalences }) => {
+  const splittedStudent = student.split('-')
+  const name = splittedStudent[1].trim()
+  const matricula = splittedStudent[0].trim()
+
+  // TODO: Repeated students
+  if (Object.values(equivalences).length == 0) return
+
   return (
     <>
         <div className="text-center">
@@ -60,13 +67,14 @@ const Pdf = ({ student, subjects, equivalences }) => {
         </Table>
 
         <input type="checkbox" checked readOnly /> Sim. A equivalência, entretanto, só pode ser considerada nestes casos específicos.<br />
-        <label className="student-name">Aluno(a): {student}</label>
-        <label>Matrícula: {student}</label><br />
+        <label className="student-name">Aluno(a): {name}</label>
+        <label>Matrícula: {matricula}</label><br />
         <label className="date">Data: {date()}</label>
         <br />
 
         _________________________________________
         <p>Assinatura e carimbo da Coordenação do Curso</p>
+        <div className="pagebreak"> </div>
       </>
   )
 }
