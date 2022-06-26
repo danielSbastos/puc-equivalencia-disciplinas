@@ -49,20 +49,17 @@ export default function XlsImporterApp({ handleResult }) {
 
     reader.onload = (evt) => {
       const bstr = evt.target.result;
-      const wb = XLSX.read(bstr, { type: "binary" });
-      const wsname = wb.SheetNames[0];
-      const ws = wb.Sheets[wsname];
-      const data = XLSX.utils.sheet_to_csv(ws, { header: 1 });
-      let info;
       try {
-        info = extractInfo(data);
+        const info = JSON.parse(bstr);
         setFileName(file.name);
         handleResult(info)
       } catch (error) {
-        alert('Arquivo inválido')
+        alert('Erro')
+        console.log(error)
       }
     };
-    reader.readAsBinaryString(file);
+
+    reader.readAsText(file);
   };
   return (
     <div>

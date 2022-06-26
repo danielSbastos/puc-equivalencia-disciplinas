@@ -86,5 +86,5 @@ sh = book.sheet_by_index(0)
 info = split_by_student(sh)
 subjects_by_student = extras_and_in_course_subjects(info)
 
-with open('result.json', 'w+', encoding="ISO-8859-1") as fp:
+with open('result.json', 'w+') as fp:
     json.dump(subjects_by_student, fp, ensure_ascii=False,  indent=2)

@@ -19,3 +19,16 @@
 .date {
   margin-bottom: 4%;
 }
+
+@media print {
+  html, body {
+    height: initial !important;
+    overflow: initial !important;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+@page {
+  size: auto;
+  margin: 20mm 10mm;
+}

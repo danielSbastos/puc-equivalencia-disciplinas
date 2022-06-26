@@ -12,24 +12,21 @@ const date = () => {
   return day + "/" + month + "/" + year;
 }
 
-const PdfExporter = React.forwardRef(({ subjects, equivalences }, ref) => {
-  const { extraIndex, missingIndex, subjectsMissing, subjectsExtra, studentInfo } = subjects;
-
+const Pdf = ({ student, subjects, equivalences }) => {
   return (
-    <div className='pdf' ref={ref}>
-      <div className="text-center">
-        <img src="image1.jpg" className="logo" alt="puc" />
-        <p className="subtitle"><b>Centro de Registros Acadêmicos</b></p>
-      </div>
+    <>
+        <div className="text-center">
+          <img src="image1.jpg" className="logo" alt="puc" />
+          <p className="subtitle"><b>Centro de Registros Acadêmicos</b></p>
+        </div>
 
-      <label>Prezado Coordenador,</label>
-      <p>Favor verificar se a equivalência solicitada pode ser efetivada.</p>
+        <label>Prezado Coordenador,</label>
+        <p>Favor verificar se a equivalência solicitada pode ser efetivada.</p>
 
-      Assinale um dos quadros abaixo:<br />
-      <input type="checkbox" /> Não, a equivalência não pode ser considerada.<br />
-      <input type="checkbox" /> Sim. A equivalência deve prevalecer para todos os casos e deve ser lançada na tabela de equivalência.
-
-      <Table bordered className="subjects-table">
+        Assinale um dos quadros abaixo:<br />
+        <input type="checkbox" /> Não, a equivalência não pode ser considerada.<br />
+        <input type="checkbox" /> Sim. A equivalência deve prevalecer para todos os casos e deve ser lançada na tabela de equivalência.
+        <Table bordered className="subjects-table">
         <thead>
           <tr>
             <th>Disciplinas do curso</th>
@@ -41,34 +38,45 @@ const PdfExporter = React.forwardRef(({ subjects, equivalences }, ref) => {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(equivalences).map((equivalence) => {
-            const extra = subjectsExtra[extraIndex[equivalence[1]]]
-            const missing = subjectsMissing[missingIndex[equivalence[0]]]
-            return (
-              <tr key={equivalence[0]}>
-                <td>{missing.name}</td>
-                <td>{missing.hours}</td>
-                <td>{missing.id}</td>
-                <td>{extra.name}</td>
-                <td>{extra.hours}</td>
-                <td>{extra.id}</td>
-              </tr>
-            )
-          })}
+        {Object.entries(equivalences).map((equivalence) => {
+          const extraId = equivalence[1]
+          const toCourseId = equivalence[0]
+
+          const toCourse = subjects.to_course.find((s) => s.id === parseInt(toCourseId))
+          const extra = subjects.extra.find((s) => s.id === extraId)
+
+          return (
+            <tr key={equivalence[0]}>
+              <td>{toCourse.name}</td>
+              <td>{toCourse.hours}</td>
+              <td>{toCourse.id}</td>
+              <td>{extra.name}</td>
+              <td>{extra.hours}</td>
+              <td>{extra.id}</td>
+            </tr>
+          )
+        })}
         </tbody>
-      </Table>
+        </Table>
 
-      <input type="checkbox" checked readOnly /> Sim. A equivalência, entretanto, só pode ser considerada nestes casos específicos.<br />
-      <label className="student-name">Aluno(a): {studentInfo.name}</label>
-      <label>Matrícula: {studentInfo.id}</label><br />
-      <label className="date">Data: {date()}</label>
-      <br />
+        <input type="checkbox" checked readOnly /> Sim. A equivalência, entretanto, só pode ser considerada nestes casos específicos.<br />
+        <label className="student-name">Aluno(a): {student}</label>
+        <label>Matrícula: {student}</label><br />
+        <label className="date">Data: {date()}</label>
+        <br />
 
-      _________________________________________
-      <p>Assinatura e carimbo da Coordenação do Curso</p>
+        _________________________________________
+        <p>Assinatura e carimbo da Coordenação do Curso</p>
+      </>
+  )
+}
 
+const PdfExporter = React.forwardRef(({ seenStudents, subjects, equivalences }, ref) => {
+  return (
+    <div className='pdf' ref={ref}>
+      {seenStudents.map(student => <Pdf student={student} subjects={subjects[student]} equivalences={equivalences[student]} />)}
     </div>
-  );
+  )
 });
 
 PdfExporter.displayName = 'PdfExporter';

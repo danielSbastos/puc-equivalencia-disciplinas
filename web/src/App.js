@@ -5,28 +5,39 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
-import { TrashFill  } from 'react-bootstrap-icons';
+import Navbar from 'react-bootstrap/Navbar';
+import Nav from 'react-bootstrap/Nav';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+
+import { TrashFill, Circle, Check } from 'react-bootstrap-icons';
 
 import './App.css';
 
 import XlsImporter from './XlsImporter';
 import PdfExporter from './PdfExporter';
-
-const subjectsInitState = {
-  extraIndex: {},
-  missingIndex: {},
-  subjectsMissing: [],
-  subjectsExtra: [],
-  studentInfo: {}
-}
+const subjectsInitState = {}
 
 function App() {
   const componentRef = useRef();
 
+  // global
   const [equivalences, setEquivalences] = useState({});
+  const [subjects, setSubjects] = useState(subjectsInitState)
+  const [seenStudents, setSeenStudents] = useState([]);
+  const [students, setStudents] = useState([])
+
+  // per student
+  const [currentEquivalences, setCurrentEquivalences] = useState({});
   const [missingSelected, setMissingSelected] = useState(null);
   const [extraSelected, setExtraSelected] = useState(null);
-  const [subjects, setSubjects] = useState(subjectsInitState)
+
+  const [currentStudent, setCurrentStudent] = useState();
+
+  const handleSubjects = (subjects) => {
+    setSubjects(subjects)
+    setStudents(Object.keys(subjects))
+    setCurrentStudent(Object.keys(subjects)[0])
+  }
 
   const handleEquivalence = (id, isExtra, event) => {
     if (event.target.nodeName === 'svg' || event.target.nodeName === 'path' ) {
@@ -35,7 +46,7 @@ function App() {
 
     if (isExtra) {
       if (missingSelected) {
-        setEquivalences({ ...equivalences, [missingSelected]: id })
+        setCurrentEquivalences({ ...currentEquivalences, [missingSelected]: id })
         setExtraSelected(null)
         setMissingSelected(null)
       } else {
@@ -43,7 +54,7 @@ function App() {
       }
     } else {
       if (extraSelected) {
-        setEquivalences({ ...equivalences, [id]: extraSelected })
+        setCurrentEquivalences({ ...currentEquivalences, [id]: extraSelected })
         setExtraSelected(null)
         setMissingSelected(null)
       } else {
@@ -53,8 +64,8 @@ function App() {
   }
 
   const handleRemoveEquivalence = (extraId) => {
-    delete equivalences[extraId];
-    setEquivalences({ ...equivalences });
+    delete currentEquivalences[extraId];
+    setCurrentEquivalences({ ...currentEquivalences });
     setExtraSelected(null)
     setMissingSelected(null)
   }
@@ -62,24 +73,35 @@ function App() {
   const missingSubject = (missing) => {
     let equivalence;
 
-    if (equivalences[missing.id]) {
-      equivalence = equivalences[missing.id] + " - " + subjects.subjectsExtra[subjects.extraIndex[equivalences[missing.id]]].name;
+    let equivalenceId = currentEquivalences[missing.id];
+    let clicked = Object.keys(currentEquivalences).includes(missing.id) || (missingSelected === missing.id);
+
+    if (equivalences[currentStudent] != undefined) {
+      equivalenceId = equivalenceId || equivalences[currentStudent][missing.id]
+      clicked = clicked || Object.keys(equivalences[currentStudent]).includes('' + missing.id);
     }
 
-    const clicked =  Object.keys(equivalences).includes(missing.id) || (missingSelected === missing.id);
+    if (equivalenceId) {
+      const extra = subjects[currentStudent].extra.filter((e) => e.id === equivalenceId)[0];
+      equivalence = equivalenceId + " - " + extra.name;
+    }
+
     return (
       <tr className={(clicked || equivalence)? "subject-selected": ""} onClick={(event) => handleEquivalence(missing.id, false, event)} key={missing.id}>
         <td>{missing.id}</td>
         <td>{missing.name}</td>
         <td>{missing.hours}</td>
-        <td>{equivalences[missing.id] && equivalence}</td>
-        <td>{equivalences[missing.id] && <TrashFill onClick={() => handleRemoveEquivalence(missing.id)}/>}</td>
+        <td>{equivalenceId && equivalence}</td>
+        <td>{equivalenceId && <TrashFill onClick={() => handleRemoveEquivalence(missing.id)}/>}</td>
       </tr>
     )
   }
 
   const extraSubject = (extra) => {
-    const clicked =  Object.values(equivalences).includes(extra.id) || (extraSelected === extra.id);
+    let clicked = Object.values(currentEquivalences).includes(extra.id) || (extraSelected === extra.id);
+    if (equivalences[currentStudent] != undefined) {
+      clicked = clicked || Object.values(equivalences[currentStudent]).includes(extra.id);
+    }
 
     return (
       <tr className={clicked ? "subject-selected": ""} onClick={(event) => handleEquivalence(extra.id, true, event)} key={extra.id}>
@@ -91,15 +113,73 @@ function App() {
     )
   }
 
+  // on Next
+  const handleSeenStudent = () => {
+    setCurrentStudent(students[students.indexOf(currentStudent) + 1])
+    setSeenStudents([ ...seenStudents, currentStudent ])
+    setCurrentEquivalences({})
+    setEquivalences({ ...equivalences, [currentStudent]: currentEquivalences })
+  }
+
+  // on Page load
+  const handleCurrentStudent = ({ target: { text }}) => {
+    setCurrentEquivalences(equivalences[text.trim()] || {})
+    setCurrentStudent(text.trim())
+  }
+
+  const handleNextStudent = () => {
+    const newCurrentStudent = students[students.indexOf(currentStudent) + 1]
+    setCurrentStudent(newCurrentStudent)
+    setCurrentEquivalences(equivalences[newCurrentStudent] || {})
+  }
+
+  const handlePreviousStudent = () => {
+    const newCurrentStudent = students[students.indexOf(currentStudent) - 1]
+    setCurrentStudent(newCurrentStudent)
+    setCurrentEquivalences(equivalences[newCurrentStudent] || {})
+  }
+
+  const NameIcon = ({ student }) => {
+    if (seenStudents.includes(student))
+      return <><Check /> {student}</>
+    return <><Circle /> {student}</>
+  }
+
   return (
     <div className="App">
+      <Navbar variant="dark" bg="dark" expand="lg">
+        <Container fluid>
+          <Navbar.Brand>PUC-Minas | Equivalência de Disciplinas</Navbar.Brand>
+          <Navbar.Toggle />
+          <Navbar.Collapse>
+            <Nav>
+              {students.length > 0 &&
+                <>
+                  <label style={{ color: 'white', margin: 'auto' }}>{seenStudents.length} / {students.length}</label>
+                  <label onClick={handlePreviousStudent} style={{ color: 'white', margin: 'auto' }}>Anterior</label>
+                  <NavDropdown
+                    title={<NameIcon student={currentStudent}/>}
+                    menuVariant="dark"
+                  >
+                    {students.map((student) => (
+                      <NavDropdown.Item onClick={handleCurrentStudent}>
+                        <NameIcon student={student}/>
+                      </NavDropdown.Item>
+                    ))}
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item>Gerar PDF</NavDropdown.Item>
+                  </NavDropdown>
+                  <label onClick={handleNextStudent} style={{ color: 'white', margin: 'auto' }}>Próximo</label>
+               </>
+              }
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
       <Container fluid="lg">
-        <h1>PUC Minas | Equivalência de Disciplinas</h1>
-        <label><b>Aluno(a): </b>{subjects.studentInfo?.name}</label>
-        <p><b>Matrícula: </b>{subjects.studentInfo?.id}</p>
-        <XlsImporter handleResult={setSubjects} />
-        <hr />
-        <Row>
+        <XlsImporter handleResult={handleSubjects} />
+
+        {currentStudent && <Row>
           <Col md={7}>
             <h3>Disciplinas a cursar</h3>
             <Table striped bordered hover>
@@ -112,7 +192,7 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {subjects.subjectsMissing.map(missing => missingSubject(missing))}
+                {subjects[currentStudent].to_course.map(missing => missingSubject(missing))}
               </tbody>
             </Table>
           </Col>
@@ -128,16 +208,17 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {subjects.subjectsExtra.map(extra => extraSubject(extra))}
+                {subjects[currentStudent].extra.map(extra => extraSubject(extra))}
               </tbody>
             </Table>
+            <Button variant="success" onClick={handleSeenStudent}>Salvar e Avançar</Button>
             <ReactToPrint
-              trigger={() => <Button>Gerar pedido</Button>}
+              trigger={() => <Button>Gerar PDF</Button>}
               content={() => componentRef.current}
             />
-            <PdfExporter ref={componentRef} equivalences={equivalences} subjects={subjects} />
           </Col>
-        </Row>
+          <PdfExporter ref={componentRef} seenStudents={seenStudents} equivalences={equivalences} subjects={subjects} />
+        </Row>}
       </Container>
     </div>
   );
