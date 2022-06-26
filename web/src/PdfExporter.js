@@ -17,7 +17,6 @@ const Pdf = ({ student, subjects, equivalences }) => {
   const name = splittedStudent[1].trim()
   const matricula = splittedStudent[0].trim()
 
-  // TODO: Repeated students
   if (Object.values(equivalences).length == 0) return
 
   return (
@@ -33,7 +32,7 @@ const Pdf = ({ student, subjects, equivalences }) => {
         Assinale um dos quadros abaixo:<br />
         <input type="checkbox" /> Não, a equivalência não pode ser considerada.<br />
         <input type="checkbox" /> Sim. A equivalência deve prevalecer para todos os casos e deve ser lançada na tabela de equivalência.
-        <Table bordered className="subjects-table">
+        <Table size="sm" bordered className="subjects-table">
         <thead>
           <tr>
             <th>Disciplinas do curso</th>

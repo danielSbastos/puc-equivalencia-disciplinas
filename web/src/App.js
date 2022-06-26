@@ -44,6 +44,14 @@ function App() {
       return
     }
 
+    if (missingSelected === id) {
+      setMissingSelected(null)
+      return
+    } else if (extraSelected === id) {
+      setExtraSelected(null)
+      return
+    }
+
     if (isExtra) {
       if (missingSelected) {
         setCurrentEquivalences({ ...currentEquivalences, [missingSelected]: id })
@@ -87,7 +95,11 @@ function App() {
     }
 
     return (
-      <tr className={(clicked || equivalence)? "subject-selected": ""} onClick={(event) => handleEquivalence(missing.id, false, event)} key={missing.id}>
+      <tr
+        className={(clicked || equivalence)? "subject-selected": ""}
+        onClick={(event) => handleEquivalence(missing.id, false, event)}
+        key={missing.id}
+      >
         <td>{missing.id}</td>
         <td>{missing.name}</td>
         <td>{missing.hours}</td>
@@ -104,7 +116,10 @@ function App() {
     }
 
     return (
-      <tr className={clicked ? "subject-selected": ""} onClick={(event) => handleEquivalence(extra.id, true, event)} key={extra.id}>
+      <tr
+        className={clicked ? "subject-selected": ""}
+        onClick={(event) => handleEquivalence(extra.id, true, event)} key={extra.id}
+      >
         <td>{extra.id}</td>
         <td>{extra.name}</td>
         <td>{extra.grade}</td>
@@ -115,9 +130,10 @@ function App() {
 
   // on Next
   const handleSeenStudent = () => {
-    setCurrentStudent(students[students.indexOf(currentStudent) + 1])
-    setSeenStudents([ ...seenStudents, currentStudent ])
-    setCurrentEquivalences({})
+    handleNextStudent()
+
+    if (!seenStudents.includes(currentStudent)) setSeenStudents([ ...seenStudents, currentStudent ])
+
     setEquivalences({ ...equivalences, [currentStudent]: currentEquivalences })
   }
 
@@ -147,41 +163,48 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar variant="dark" bg="dark" expand="lg">
+      <Navbar variant="dark" bg="dark" expand="lg" style={{ marginBottom: '1%' }}>
         <Container fluid>
           <Navbar.Brand>PUC-Minas | Equivalência de Disciplinas</Navbar.Brand>
-          <Navbar.Toggle />
-          <Navbar.Collapse>
-            <Nav>
-              {students.length > 0 &&
-                <>
-                  <label style={{ color: 'white', margin: 'auto' }}>{seenStudents.length} / {students.length}</label>
-                  <label onClick={handlePreviousStudent} style={{ color: 'white', margin: 'auto' }}>Anterior</label>
-                  <NavDropdown
-                    title={<NameIcon student={currentStudent}/>}
-                    menuVariant="dark"
-                  >
-                    {students.map((student) => (
-                      <NavDropdown.Item onClick={handleCurrentStudent}>
-                        <NameIcon student={student}/>
-                      </NavDropdown.Item>
-                    ))}
-                    <NavDropdown.Divider />
-                    <NavDropdown.Item>Gerar PDF</NavDropdown.Item>
-                  </NavDropdown>
-                  <label onClick={handleNextStudent} style={{ color: 'white', margin: 'auto' }}>Próximo</label>
-               </>
-              }
-            </Nav>
-          </Navbar.Collapse>
+          <Nav className="me-auto">
+          {students.length > 0 &&
+            <>
+            <Nav.Link>{seenStudents.length} / {students.length}</Nav.Link>
+            <NavDropdown
+              title={<NameIcon student={currentStudent}/>}
+              menuVariant="dark"
+            >
+              {students.map((student) => (
+                <NavDropdown.Item onClick={handleCurrentStudent}>
+                  <NameIcon student={student}/>
+                </NavDropdown.Item>
+              ))}
+            </NavDropdown>
+            </>
+            }
+          </Nav>
         </Container>
       </Navbar>
       <Container fluid="lg">
-        <XlsImporter handleResult={handleSubjects} />
-
+        {students.length == 0 &&
+          <XlsImporter handleResult={handleSubjects} />
+        }
         {currentStudent && <Row>
           <Col md={7}>
-            <h3>Disciplinas a cursar</h3>
+            <Row>
+              <Col md={5}>
+                <h3>Disciplinas a cursar</h3>
+              </Col>
+              <Col md={7}>
+                <ReactToPrint
+                  trigger={() => <Button variant="dark">Gerar PDF</Button>}
+                  content={() => componentRef.current}
+                />
+                <Button style={{ marginLeft: '1%' }} variant="outline-primary" onClick={handlePreviousStudent}>Voltar</Button>
+                <Button style={{ marginLeft: '1%' }} variant="outline-primary" onClick={handleNextStudent}>Avançar</Button>
+                <Button style={{ marginLeft: '1%' }} variant="success" onClick={handleSeenStudent}>Salvar e Avançar</Button>
+              </Col>
+            </Row>
             <Table striped bordered hover>
               <thead>
                 <tr>
@@ -211,14 +234,9 @@ function App() {
                 {subjects[currentStudent].extra.map(extra => extraSubject(extra))}
               </tbody>
             </Table>
-            <Button variant="success" onClick={handleSeenStudent}>Salvar e Avançar</Button>
-            <ReactToPrint
-              trigger={() => <Button>Gerar PDF</Button>}
-              content={() => componentRef.current}
-            />
           </Col>
-          <PdfExporter ref={componentRef} seenStudents={seenStudents} equivalences={equivalences} subjects={subjects} />
-        </Row>}
+         </Row>}
+        <PdfExporter ref={componentRef} seenStudents={seenStudents} equivalences={equivalences} subjects={subjects} />
       </Container>
     </div>
   );
