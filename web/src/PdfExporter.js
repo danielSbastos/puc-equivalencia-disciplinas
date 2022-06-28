@@ -79,6 +79,8 @@ const Pdf = ({ student, subjects, equivalences }) => {
 }
 
 const PdfExporter = React.forwardRef(({ seenStudents, subjects, equivalences }, ref) => {
+  if (Object.keys(equivalences).length === 0) return
+
   return (
     <div className='pdf' ref={ref}>
       {seenStudents.map(student => <Pdf student={student} subjects={subjects[student]} equivalences={equivalences[student]} />)}

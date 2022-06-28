@@ -181,7 +181,7 @@ function App() {
               menuVariant="dark"
             >
               {students.map((student) => (
-                <NavDropdown.Item onClick={handleCurrentStudent}>
+                <NavDropdown.Item key={student} onClick={handleCurrentStudent}>
                   <NameIcon student={student}/>
                 </NavDropdown.Item>
               ))}
@@ -242,7 +242,7 @@ function App() {
             </Table>
           </Col>
          </Row>}
-        <PdfExporter ref={componentRef} seenStudents={seenStudents} equivalences={equivalences} subjects={subjects} />
+         <PdfExporter ref={componentRef} seenStudents={seenStudents} equivalences={equivalences} subjects={subjects} />
       </Container>
     </div>
   );

@@ -4,8 +4,6 @@
 
 Converter de XLS para JSON.
 
-### Passos
-
 - Baixar Python com versão 3.x, com prioridade para 3.8.10.
 - Entrar na pasta `parser`
 - Instalar as dependências com `pip3 install -r requirements.txt` (ou `pip`)

@@ -48,7 +48,8 @@ def extras_and_in_course_subjects(info):
                 elif current_label == 1:
                     extra.append(parse_subject_row(row, is_extra=True))
 
-        students[key] = { "to_course": to_course, "extra": extra }
+        if len(extra) > 0:
+            students[key] = { "to_course": to_course, "extra": extra }
 
     return students
 
@@ -85,7 +86,6 @@ sh = book.sheet_by_index(0)
 
 info = split_by_student(sh)
 subjects_by_student = extras_and_in_course_subjects(info)
-del subjects_by_student[""]
 
 with open('result.json', 'w+') as fp:
     json.dump(subjects_by_student, fp, ensure_ascii=False,  indent=2)
