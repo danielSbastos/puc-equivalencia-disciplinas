@@ -21,6 +21,7 @@ function App() {
   const componentRef = useRef();
 
   // global
+  const [signature, setSignature] = useState();
   const [equivalences, setEquivalences] = useState({});
   const [subjects, setSubjects] = useState(subjectsInitState)
   const [seenStudents, setSeenStudents] = useState([]);
@@ -192,10 +193,10 @@ function App() {
         </Container>
       </Navbar>
       <Container fluid="lg">
-        {students.length == 0 &&
-          <XlsImporter handleResult={handleSubjects} />
+        {(students.length == 0 || signature == null) &&
+          <XlsImporter handleSignature={setSignature} handleResult={handleSubjects} />
         }
-        {currentStudent && <Row>
+        {currentStudent && signature != null  && <Row>
           <Col md={7}>
             <Row>
               <Col md={5}>
@@ -242,7 +243,9 @@ function App() {
             </Table>
           </Col>
          </Row>}
-         <PdfExporter ref={componentRef} seenStudents={seenStudents} equivalences={equivalences} subjects={subjects} />
+        {(students.length > 0 && signature != null) &&
+         <PdfExporter ref={componentRef} signature={signature} seenStudents={seenStudents} equivalences={equivalences} subjects={subjects} />
+        }
       </Container>
     </div>
   );

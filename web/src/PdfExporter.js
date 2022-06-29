@@ -28,7 +28,7 @@ const PdfHeader = ({ forAll }) => (
   </>
 )
 
-const PdfAll = ({ toCourse, extra }) => (
+const PdfAll = ({ signature, toCourse, extra }) => (
   <>
     <PdfHeader forAll />
     <Table size="sm" bordered className="subjects-table">
@@ -54,7 +54,8 @@ const PdfAll = ({ toCourse, extra }) => (
     </tbody>
     </Table>
 
-    <label className="date">Data: {date()}</label>
+    <p className="date">Data: {date()}</p>
+    <img src={URL.createObjectURL(signature)} style={{ height: '100px' }}  />
     <br />
     _________________________________________
     <p>Assinatura e carimbo da Coordenação do Curso</p>
@@ -62,7 +63,7 @@ const PdfAll = ({ toCourse, extra }) => (
   </>
 )
 
-const Pdf = ({ student, subjects, equivalences }) => {
+const Pdf = ({ signature, student, subjects, equivalences }) => {
   const splittedStudent = student.split('-')
   const name = splittedStudent[1].trim()
   const matricula = splittedStudent[0].trim()
@@ -110,7 +111,8 @@ const Pdf = ({ student, subjects, equivalences }) => {
       <label>Matrícula: {matricula}</label><br />
       <label className="date">Data: {date()}</label>
       <br />
-
+      <img src={URL.createObjectURL(signature)} style={{ height: '100px' }}  />
+      <br />
       _________________________________________
       <p>Assinatura e carimbo da Coordenação do Curso</p>
       <div className="pagebreak"> </div>
@@ -118,19 +120,19 @@ const Pdf = ({ student, subjects, equivalences }) => {
   )
 }
 
-const PdfExporter = React.forwardRef(({ seenStudents, subjects, equivalences }, ref) => {
+const PdfExporter = React.forwardRef(({ signature, seenStudents, subjects, equivalences }, ref) => {
   const optI = { id: 54974, name: 'OPTATIVA I (Virtual)', hours: 80 }
-  const diw = { id: 55177,  name: 'DESENVOLVIMENTO DE INTERFACES WEB (Virtual)', grade: 65, hours: 80 }
+  const diw = { id: 55177,  name: 'DESENVOLVIMENTO DE INTERFACES WEB (Virtual)', hours: 80 }
 
-  const Pdfs = ({ equivalences, seenStudents, subjects }) => {
+  const Pdfs = () => {
     if (Object.keys(equivalences).length === 0) return <></>
-    return seenStudents.map(student => <Pdf student={student} subjects={subjects[student]} equivalences={equivalences[student]} />)
+    return seenStudents.map(student => <Pdf signature={signature} student={student} subjects={subjects[student]} equivalences={equivalences[student]} />)
   }
 
   return (
     <div className='pdf' ref={ref}>
-      <PdfAll toCourse={optI} extra={diw} />
-      <Pdfs equivalences={equivalences} seenStudents={seenStudents} subjects={subjects} />
+      <PdfAll toCourse={optI} extra={diw} signature={signature} />
+      <Pdfs />
     </div>
   )
 });

@@ -1,5 +1,5 @@
 .logo {
-  width: 45%;
+  width: 35%;
 }
 
 .subtitle {
@@ -12,16 +12,16 @@
 }
 
 .student-name {
-  margin-top: 1%;
   margin-right: 4%;
 }
 
 .date {
-  margin-bottom: 4%;
+  margin-bottom: 1%;
 }
 
 @media print {
   html, body {
+    font-size: 14px;
     height: initial !important;
     overflow: initial !important;
     -webkit-print-color-adjust: exact;
@@ -30,6 +30,5 @@
 }
 
 @page {
-  size: auto;
-  margin: 15mm 2mm;
+  margin: 10mm 2mm;
 }
