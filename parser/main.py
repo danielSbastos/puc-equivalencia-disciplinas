@@ -6,6 +6,9 @@ TO_COURSE_LABEL = "Relação das disciplinas que o aluno deverá cursar para int
 EXTRA_LABEL = "Relação das disciplinas que o aluno cursou/foi dispensado em outro currículo/curso na PUC/MG e que não serviram de base para dispensa de disciplinas do currículo atual."
 COMPLEMENTARY_HOURS_LABEL = "Atividades complementares"
 
+OPTIONAL_I_CODE = 54974
+DIW_CODE = 55177
+
 def split_by_student(sh):
     current_student = ""
     data_by_student = {}
@@ -33,6 +36,8 @@ def extras_and_in_course_subjects(info):
     for key, value in info.items():
         to_course = []
         extra = []
+        diw_row  = None
+        op_i_row = None
 
         for row in value:
             if row[0].value == TO_COURSE_LABEL:
@@ -42,16 +47,30 @@ def extras_and_in_course_subjects(info):
             elif row[0].value == COMPLEMENTARY_HOURS_LABEL or row[0].value == IN_COURSE_LABEL:
                 current_label = None
 
-            if is_valid_subject_row(row, current_label):
+            if is_valid_subject_row(row, current_label) and is_valid_label(current_label):
+                subject = parse_subject_row(row, is_extra=current_label)
+                if subject["id"] == DIW_CODE:
+                    diw_row = subject
+                elif subject["id"] == OPTIONAL_I_CODE:
+                    op_i_row = subject
+
                 if current_label == 0:
-                    to_course.append(parse_subject_row(row, is_extra=False))
+                    to_course.append(subject)
                 elif current_label == 1:
-                    extra.append(parse_subject_row(row, is_extra=True))
+                    extra.append(subject)
+
+
+        if (diw_row is not None) and (op_i_row is not None):
+            to_course.remove(op_i_row)
+            extra.remove(diw_row)
 
         if len(extra) > 0:
             students[key] = { "to_course": to_course, "extra": extra }
 
     return students
+
+def is_valid_label(l):
+    return l == 1 or l == 0
 
 def is_valid_subject_row(row, is_extra):
     generic_valid = row[1].value != '' and row[3].value
