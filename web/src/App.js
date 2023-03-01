@@ -171,8 +171,8 @@ function App() {
   return (
     <div className="App">
       <Navbar variant="dark" bg="dark" expand="lg" style={{ marginBottom: '1%' }}>
-        <Container fluid>
-          <Navbar.Brand>PUC-Minas | Equivalência de Disciplinas</Navbar.Brand>
+        <Container fluid="lg">
+          <Navbar.Brand>PUC Minas | Equivalência de Disciplinas</Navbar.Brand>
           <Nav className="me-auto">
           {students.length > 0 &&
             <>
