@@ -121,17 +121,21 @@ const Pdf = ({ signature, student, subjects, equivalences }) => {
 }
 
 const PdfExporter = React.forwardRef(({ signature, seenStudents, subjects, equivalences }, ref) => {
-  const optI = { id: 54974, name: 'OPTATIVA I (Virtual)', hours: 80 }
-  const diw = { id: 55177,  name: 'DESENVOLVIMENTO DE INTERFACES WEB (Virtual)', hours: 80 }
-
   const Pdfs = () => {
     if (Object.keys(equivalences).length === 0) return <></>
-    return seenStudents.map(student => <Pdf signature={signature} student={student} subjects={subjects[student]} equivalences={equivalences[student]} />)
+    
+    return seenStudents.map(student =>
+      <Pdf
+        signature={signature}
+        student={student}
+        subjects={subjects[student]}
+        equivalences={equivalences[student]}
+      />
+    )
   }
 
   return (
     <div className='pdf' ref={ref}>
-      <PdfAll toCourse={optI} extra={diw} signature={signature} />
       <Pdfs />
     </div>
   )
