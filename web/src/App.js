@@ -15,6 +15,8 @@ import './App.css';
 
 import XlsImporter from './XlsImporter';
 import PdfExporter from './PdfExporter';
+import About from './About';
+
 const subjectsInitState = {}
 
 function App() {
@@ -174,21 +176,26 @@ function App() {
         <Container fluid="lg">
           <Navbar.Brand>PUC Minas | Equivalência de Disciplinas</Navbar.Brand>
           <Nav className="me-auto">
-          {students.length > 0 &&
+            {students.length > 0 &&
             <>
-            <Nav.Link>{seenStudents.length} / {students.length}</Nav.Link>
-            <NavDropdown
-              title={<NameIcon student={currentStudent}/>}
-              menuVariant="dark"
-            >
-              {students.map((student) => (
-                <NavDropdown.Item key={student} onClick={handleCurrentStudent}>
-                  <NameIcon student={student}/>
-                </NavDropdown.Item>
-              ))}
-            </NavDropdown>
+              <Nav.Link>{seenStudents.length} / {students.length}</Nav.Link>
+              <NavDropdown
+                title={<NameIcon student={currentStudent}/>}
+                menuVariant="dark"
+              >
+                {students.map((student) => (
+                  <NavDropdown.Item key={student} onClick={handleCurrentStudent}>
+                    <NameIcon student={student}/>
+                  </NavDropdown.Item>
+                ))}
+              </NavDropdown>
             </>
             }
+          </Nav>
+          <Nav>
+            <Nav.Link className="sobre">
+              <About />
+            </Nav.Link>
           </Nav>
         </Container>
       </Navbar>
