@@ -43,6 +43,7 @@ export default function XlsImporterApp({ handleResult, handleSignature }) {
       <br />
 
       <label htmlFor="signature" className="btn btn-primary">Selecionar assinatura</label>
+      <br/><i>Resolução sugerida: largura: 600px x altura: 300px</i>
       <label className="file-name">{signatureFile}</label>
       <input className="file-input" id="signature" onChange={onChangeSignature} type="file" accept="image/jpg, image/jpeg, image/png" />
       </div>
