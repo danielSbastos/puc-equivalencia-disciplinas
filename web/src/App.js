@@ -201,7 +201,11 @@ function App() {
       </Navbar>
       <Container fluid="lg">
         {(students.length == 0 || signature == null) &&
-          <XlsImporter handleSignature={setSignature} handleResult={handleSubjects} />
+           <>
+            <XlsImporter handleSignature={setSignature} handleResult={handleSubjects} />
+            <h3>Tutorial de Utilização</h3>
+            <iframe src="https://drive.google.com/file/d/1QjEUNbo3x76VOfHDXX7iwgcQh91c7Y1z/preview" width="1020" height="580" allow="autoplay"></iframe>
+          </>
         }
         {currentStudent && signature != null  && <Row>
           <Col md={7}>
