@@ -204,7 +204,7 @@ function App() {
            <>
             <XlsImporter handleSignature={setSignature} handleResult={handleSubjects} />
             <h3>Tutorial de Utilização</h3>
-            <iframe src="https://drive.google.com/file/d/1QjEUNbo3x76VOfHDXX7iwgcQh91c7Y1z/preview" width="1020" height="580" allow="autoplay"></iframe>
+            <iframe width="1020" height="580" src="https://www.youtube.com/embed/7HSYvWAcROY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
           </>
         }
         {currentStudent && signature != null  && <Row>
