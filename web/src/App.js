@@ -201,11 +201,7 @@ function App() {
       </Navbar>
       <Container fluid="lg">
         {(students.length == 0 || signature == null) &&
-           <>
-            <XlsImporter handleSignature={setSignature} handleResult={handleSubjects} />
-            <h3>Tutorial de Utilização</h3>
-            <iframe width="1020" height="580" src="https://www.youtube.com/embed/7HSYvWAcROY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-          </>
+          <XlsImporter handleSignature={setSignature} handleResult={handleSubjects} />
         }
         {currentStudent && signature != null  && <Row>
           <Col md={7}>
