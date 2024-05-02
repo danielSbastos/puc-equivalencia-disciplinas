@@ -2,6 +2,7 @@ const IN_COURSE_LABEL = "Disciplinas em Curso";
 const TO_COURSE_LABEL = "Relação das disciplinas que o aluno deverá cursar para integralizar o currículo no qual está inserido. ";
 const EXTRA_LABEL = "Relação das disciplinas que o aluno cursou/foi dispensado em outro currículo/curso na PUC/MG e que não serviram de base para dispensa de disciplinas do currículo atual.";
 const COMPLEMENTARY_HOURS_LABEL = "Atividades complementares";
+const CERTIFICATION_MODULE = "Módulo Certificação Intermediária em Desenvolvimento"
 
 const xlsToJsonConverter = (rows) => {
     const dataByStudent = groupByStudent(rows);
@@ -23,7 +24,7 @@ const extractSubjects = (dataByStudent) => {
                 currentLabel = 0;
             } else if (row[0] === EXTRA_LABEL) {
                 currentLabel = 1;
-            } else if (row[0] === COMPLEMENTARY_HOURS_LABEL || row[0] === IN_COURSE_LABEL) {
+            } else if (row[0] === COMPLEMENTARY_HOURS_LABEL || row[0] === IN_COURSE_LABEL || (row[0] && row[0].includes(CERTIFICATION_MODULE))) {
                 currentLabel = null;
             }
 
