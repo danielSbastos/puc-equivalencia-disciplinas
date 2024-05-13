@@ -86,21 +86,35 @@ const Pdf = ({ signature, student, subjects, equivalences }) => {
       </thead>
       <tbody>
       {Object.entries(equivalences).map((equivalence) => {
-        const extraId = equivalence[1]
         const toCourseId = equivalence[0]
+        const extrasId = equivalence[1]
 
         const toCourse = subjects.to_course.find((s) => s.id === parseInt(toCourseId))
-        const extra = subjects.extra.find((s) => s.id === extraId)
+        const firstExtra = subjects.extra.find((s) => s.id === extrasId[0])
 
         return (
-          <tr key={equivalence[0]}>
-            <td>{toCourse.name}</td>
-            <td>{toCourse.hours}</td>
-            <td>{toCourse.id}</td>
-            <td>{extra.name}</td>
-            <td>{extra.hours}</td>
-            <td>{extra.id}</td>
-          </tr>
+          <>
+            <tr key={equivalence[0]}>
+              <td>{toCourse.name}</td>
+              <td>{toCourse.hours}</td>
+              <td>{toCourse.id}</td>
+              <td>{firstExtra.name}</td>
+              <td>{firstExtra.hours}</td>
+              <td>{firstExtra.id}</td>
+            </tr>
+            {extrasId.slice(1).map(extraId => {
+              let extra = subjects.extra.find((s) => s.id === extraId)
+
+              return <tr key={equivalence[0]}>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{extra.name}</td>
+                <td>{extra.hours}</td>
+                <td>{extra.id}</td>
+              </tr>
+            })}
+          </>
         )
       })}
       </tbody>

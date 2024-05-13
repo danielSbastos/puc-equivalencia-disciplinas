@@ -57,7 +57,8 @@ function App() {
 
     if (isExtra) {
       if (missingSelected) {
-        setCurrentEquivalences({ ...currentEquivalences, [missingSelected]: id })
+        let missingWithNewExtras = (currentEquivalences[missingSelected] || []).concat(id)
+        setCurrentEquivalences({ ...currentEquivalences, [missingSelected]: missingWithNewExtras })
         setExtraSelected(null)
         setMissingSelected(null)
       } else {
@@ -65,7 +66,8 @@ function App() {
       }
     } else {
       if (extraSelected) {
-        setCurrentEquivalences({ ...currentEquivalences, [id]: extraSelected })
+        let missingWithNewExtras = (currentEquivalences[id] || []).concat(extraSelected)
+        setCurrentEquivalences({ ...currentEquivalences, [id]: missingWithNewExtras })
         setExtraSelected(null)
         setMissingSelected(null)
       } else {
@@ -74,30 +76,42 @@ function App() {
     } 
   }
 
-  const handleRemoveEquivalence = (extraId) => {
-    delete currentEquivalences[extraId];
-    setCurrentEquivalences({ ...currentEquivalences });
+  const handleRemoveEquivalence = (missingId, extraId) => {
+    let filteredExtrasFromMissing = (currentEquivalences[missingId] || []).filter(extra => extra != extraId);
+
+    if (filteredExtrasFromMissing.length === 0) {
+      delete currentEquivalences[missingId]
+      setCurrentEquivalences({ ...currentEquivalences });
+    } else {
+      setCurrentEquivalences({ ...currentEquivalences, [missingId]: filteredExtrasFromMissing });
+    }
+
     setExtraSelected(null)
     setMissingSelected(null)
   }
 
   const missingSubject = (missing) => {
     let equivalence;
+    const extras = [];
 
-    let equivalenceId = currentEquivalences[missing.id];
+    let equivalenceIds = currentEquivalences[missing.id] || [];
     let clicked = Object.keys(currentEquivalences).includes(missing.id) || (missingSelected === missing.id);
 
     if (equivalences[currentStudent] != undefined) {
-      equivalenceId = equivalenceId || equivalences[currentStudent][missing.id]
+      equivalenceIds = equivalenceIds || equivalences[currentStudent][missing.id]
       clicked = clicked || Object.keys(equivalences[currentStudent]).includes('' + missing.id);
     }
 
-    if (equivalenceId) {
-      const extra = subjects[currentStudent].extra.filter((e) => e.id === equivalenceId)[0];
-      equivalence = equivalenceId + " - " + extra.name;
+    if (equivalenceIds?.length > 0) {
+      equivalenceIds.forEach(equivalenceId => {
+        let extra = subjects[currentStudent].extra.filter((e) => e.id === equivalenceId)[0];
+        extras.push(extra);
+      })
+      equivalence = equivalenceIds[0] + " - " + extras[0].name;
     }
 
     return (
+      <>
       <tr
         className={(clicked || equivalence)? "subject-selected": ""}
         onClick={(event) => handleEquivalence(missing.id, false, event)}
@@ -106,16 +120,33 @@ function App() {
         <td>{missing.id}</td>
         <td>{missing.name}</td>
         <td>{missing.hours}</td>
-        <td>{equivalenceId && equivalence}</td>
-        <td>{equivalenceId && <TrashFill onClick={() => handleRemoveEquivalence(missing.id)}/>}</td>
+        <td>{equivalenceIds.length > 0 && equivalenceIds[0] + " - " + extras[0].name}</td>
+        <td>{equivalenceIds.length > 0 && <TrashFill onClick={() => handleRemoveEquivalence(missing.id, equivalenceIds[0])}/>}</td>
       </tr>
+
+      {(equivalenceIds || []).slice(1).map((equivalenceId, idx) =>
+        <tr
+          className={(clicked || equivalence)? "subject-selected": ""}
+          onClick={(event) => handleEquivalence(missing.id, false, event)}
+          key={missing.id}
+        >
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>{equivalenceId + " - " + extras[idx + 1].name}</td>
+          <td><TrashFill onClick={() => handleRemoveEquivalence(missing.id, equivalenceId)}/></td>
+        </tr>
+      )}
+      </>
     )
   }
 
   const extraSubject = (extra) => {
-    let clicked = Object.values(currentEquivalences).includes(extra.id) || (extraSelected === extra.id);
+    const currentExtras = Object.values(currentEquivalences)
+
+    let clicked = currentExtras.some(x => x.includes(extra.id)) || (extraSelected === extra.id);
     if (equivalences[currentStudent] != undefined) {
-      clicked = clicked || Object.values(equivalences[currentStudent]).includes(extra.id);
+      clicked = clicked || currentExtras.some(x => x.includes(extra.id));
     }
 
     return (
