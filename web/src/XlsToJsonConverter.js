@@ -8,7 +8,7 @@ const xlsToJsonConverter = (rows) => {
     const dataByStudent = groupByStudent(rows);
     const data = extractSubjects(dataByStudent);
 
-    return data;
+    return { data, namesByCode };
 }
 
 const extractSubjects = (dataByStudent) => {
@@ -68,23 +68,49 @@ const isValidSubjectRow = (row, isExtra) => {
     return genericValid && specificValid; 
 }
 
+const namesByCode = {}
+const isNameRow = (rowItem) => rowItem && rowItem.includes('Aluno:');
+const isSocialNameRow = (rowItem) => rowItem && rowItem.includes('Nome Social:');
+
+const extractSocialAndCivilName = (socialNameRowItem, civilNameRowItem) => {
+    const socialNameCell = socialNameRowItem.split(":")[1].trim().split(' - ');
+    const socialName = socialNameCell.length < 2 ? socialNameCell[0] : socialNameCell[1]
+    const [code, civilName] = civilNameRowItem.split(":")[1].trim().split(' - ');
+
+    namesByCode[code] = { civilName, socialName };
+
+    return { code, socialName, civilName }
+}
+
+const extractName = (nameRowItem) => {
+    let [code, civilName] = nameRowItem.split(' - ')
+
+    namesByCode[code] = { civilName };
+
+    return { socialName: '', code, civilName };
+}
+
+
 const groupByStudent = (rows) => {
     let currentStudent;
     let dataByStudent = {};
 
-    rows.forEach(row => {
-        if (row[0] === 'Aluno: ') {
-            currentStudent = row[1];
+    rows.forEach((row, idx) => {
+        if (isSocialNameRow(row[0])) {
+            currentStudent = extractSocialAndCivilName(row[0], rows[idx+2][0]);
+            return
+        } else if (isNameRow(row[0])) {
+            currentStudent = extractName(row[1])
             return
         }
 
         if (!currentStudent || isRowEmpty(row)) return;
 
-        const data = dataByStudent[currentStudent];
+        const data = dataByStudent[currentStudent.code];
         if (!data) { // no student data yet
-            dataByStudent[currentStudent] = [row];
+            dataByStudent[currentStudent.code] = [row];
         } else {
-            dataByStudent[currentStudent].push(row);
+            dataByStudent[currentStudent.code].push(row);
         }
     })
 

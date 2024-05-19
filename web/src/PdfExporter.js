@@ -28,46 +28,7 @@ const PdfHeader = ({ forAll }) => (
   </>
 )
 
-const PdfAll = ({ signature, toCourse, extra }) => (
-  <>
-    <PdfHeader forAll />
-    <Table size="sm" bordered className="subjects-table">
-    <thead>
-      <tr>
-        <th>Disciplinas do curso</th>
-        <th>CH</th>
-        <th>Código</th>
-        <th>Disciplinas equivalentes</th>
-        <th>CH</th>
-        <th>Código</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr key={toCourse.id.toString() + extra.id.toString()}>
-        <td>{toCourse.name}</td>
-        <td>{toCourse.hours}</td>
-        <td>{toCourse.id}</td>
-        <td>{extra.name}</td>
-        <td>{extra.hours}</td>
-        <td>{extra.id}</td>
-      </tr>
-    </tbody>
-    </Table>
-
-    <p className="date">Data: {date()}</p>
-    <img src={URL.createObjectURL(signature)} style={{ height: '100px' }}  />
-    <br />
-    _________________________________________
-    <p>Assinatura e carimbo da Coordenação do Curso</p>
-    <div className="pagebreak"> </div>
-  </>
-)
-
-const Pdf = ({ signature, student, subjects, equivalences }) => {
-  const splittedStudent = student.split('-')
-  const name = splittedStudent[1].trim()
-  const matricula = splittedStudent[0].trim()
-
+const Pdf = ({ signature, studentCode, studentNames, subjects, equivalences }) => {
   if (Object.values(equivalences).length == 0) return
 
   return (
@@ -107,8 +68,15 @@ const Pdf = ({ signature, student, subjects, equivalences }) => {
       </Table>
 
       <input type="checkbox" checked readOnly /> Sim. A equivalência, entretanto, só pode ser considerada nestes casos específicos.<br />
-      <label className="student-name">Aluno(a): {name}</label>
-      <label>Matrícula: {matricula}</label><br />
+
+      <br />
+      <label className="student-name">Nome Social: {studentNames.socialName}</label>
+      <br />
+      <label className="student-name">Nome Civil: {studentNames.civilName}</label>
+      <br />
+      <label>Matrícula: {studentCode}</label><br />
+      <br />
+
       <label className="date">Data: {date()}</label>
       <br />
       <img src={URL.createObjectURL(signature)} style={{ height: '100px' }}  />
@@ -120,16 +88,17 @@ const Pdf = ({ signature, student, subjects, equivalences }) => {
   )
 }
 
-const PdfExporter = React.forwardRef(({ signature, seenStudents, subjects, equivalences }, ref) => {
+const PdfExporter = React.forwardRef(({ signature, seenStudents, subjects, equivalences, namesByCode }, ref) => {
   const Pdfs = () => {
     if (Object.keys(equivalences).length === 0) return <></>
     
-    return seenStudents.map(student =>
+    return seenStudents.map(studentCode =>
       <Pdf
         signature={signature}
-        student={student}
-        subjects={subjects[student]}
-        equivalences={equivalences[student]}
+        studentCode={studentCode}
+        studentNames={namesByCode[studentCode]}
+        subjects={subjects[studentCode]}
+        equivalences={equivalences[studentCode]}
       />
     )
   }

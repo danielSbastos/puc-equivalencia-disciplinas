@@ -25,9 +25,10 @@ function App() {
   // global
   const [signature, setSignature] = useState();
   const [equivalences, setEquivalences] = useState({});
-  const [subjects, setSubjects] = useState(subjectsInitState)
+  const [subjects, setSubjects] = useState(subjectsInitState);
   const [seenStudents, setSeenStudents] = useState([]);
-  const [students, setStudents] = useState([])
+  const [students, setStudents] = useState([]);
+  const [namesByCode, setNamesByCode] = useState({});
 
   // per student
   const [currentEquivalences, setCurrentEquivalences] = useState({});
@@ -37,9 +38,10 @@ function App() {
   const [currentStudent, setCurrentStudent] = useState();
 
   const handleSubjects = (subjects) => {
-    setSubjects(subjects)
-    setStudents(Object.keys(subjects))
-    setCurrentStudent(Object.keys(subjects)[0])
+    setSubjects(subjects.data)
+    setStudents(Object.keys(subjects.data))
+    setCurrentStudent(Object.keys(subjects.data)[0])
+    setNamesByCode(subjects.namesByCode);
   }
 
   const handleEquivalence = (id, isExtra, event) => {
@@ -136,14 +138,13 @@ function App() {
     handleNextStudent()
 
     if (!seenStudents.includes(currentStudent)) setSeenStudents([ ...seenStudents, currentStudent ])
-
     setEquivalences({ ...equivalences, [currentStudent]: currentEquivalences })
   }
 
   // on Page load
-  const handleCurrentStudent = ({ target: { text }}) => {
-    setCurrentEquivalences(equivalences[text.trim()] || {})
-    setCurrentStudent(text.trim())
+  const handleCurrentStudent = (studentCode) => {
+    setCurrentEquivalences(equivalences[studentCode] || {})
+    setCurrentStudent(studentCode)
   }
 
   const handleNextStudent = () => {
@@ -170,6 +171,10 @@ function App() {
     return <><Circle /> {student}</>
   }
 
+  const studentNameAndCode = (code, names) => {
+    return !!names.socialName ? `${code} - ${names.socialName}` : `${code} - ${names.civilName}`
+  }
+
   return (
     <div className="App">
       <Navbar variant="dark" bg="dark" expand="lg" style={{ marginBottom: '1%' }}>
@@ -180,12 +185,12 @@ function App() {
             <>
               <Nav.Link>{seenStudents.length} / {students.length}</Nav.Link>
               <NavDropdown
-                title={<NameIcon student={currentStudent}/>}
+                title={<NameIcon student={studentNameAndCode(currentStudent, namesByCode[currentStudent])}/>}
                 menuVariant="dark"
               >
                 {students.map((student) => (
-                  <NavDropdown.Item key={student} onClick={handleCurrentStudent}>
-                    <NameIcon student={student}/>
+                  <NavDropdown.Item key={student} onClick={() => handleCurrentStudent(student)}>
+                    <NameIcon student={studentNameAndCode(student, namesByCode[student])}/>
                   </NavDropdown.Item>
                 ))}
               </NavDropdown>
@@ -251,7 +256,14 @@ function App() {
           </Col>
          </Row>}
         {(students.length > 0 && signature != null) &&
-         <PdfExporter ref={componentRef} signature={signature} seenStudents={seenStudents} equivalences={equivalences} subjects={subjects} />
+         <PdfExporter
+          ref={componentRef}
+          signature={signature}
+          seenStudents={seenStudents}
+          equivalences={equivalences}
+          subjects={subjects}
+          namesByCode={namesByCode}
+        />
         }
       </Container>
     </div>
